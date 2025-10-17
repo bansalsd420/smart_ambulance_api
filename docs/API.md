@@ -1,0 +1,168 @@
+# SMART AMBULANCE API — Developer Guide
+
+This document outlines the endpoints, roles, and typical flows for the SMART AMBULANCE REST API.
+
+- Base URL: http://localhost:3000
+- Auth: JWT via `Authorization: Bearer <token>`
+- Content-Type: application/json
+
+## Quick start
+1) Login as superadmin (seeded):
+```sh
+curl -s -X POST http://localhost:3000/api/auth/login \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"superadmin@example.com","password":"admin123"}'
+```
+2) Export token for subsequent calls.
+
+## Key endpoints
+- Health: GET `/api/health`
+- Auth: POST `/api/auth/login`
+
+### Users (admin roles)
+- GET `/api/users`
+- POST `/api/users` { email, password, role, hospital_id?, fleet_id? }
+- GET `/api/users/:id`
+- PUT `/api/users/:id`
+- DELETE `/api/users/:id` (superadmin)
+
+### Hospitals
+- POST `/api/hospitals` { name, address?, contact_phone? }
+- GET `/api/hospitals`
+- GET `/api/hospitals/:id`
+- PUT `/api/hospitals/:id`
+- DELETE `/api/hospitals/:id` (superadmin)
+
+### Fleets
+- POST `/api/fleets` { name, contact_phone? }
+- GET `/api/fleets`
+- GET `/api/fleets/:id`
+- PUT `/api/fleets/:id`
+- DELETE `/api/fleets/:id` (superadmin)
+
+### Ambulances
+- POST `/api/ambulances` { code, owner_type: 'hospital'|'fleet', owner_id, name?, device_ids?, metadata? }
+- GET `/api/ambulances?owner_type=&owner_id=&status=`
+- GET `/api/ambulances/:id`
+- PUT `/api/ambulances/:id`
+- DELETE `/api/ambulances/:id` (superadmin)
+
+### Ambulance approvals (superadmin)
+- GET `/api/ambulance-approvals?status=pending`
+- GET `/api/ambulance-approvals/:id`
+- POST `/api/ambulance-approvals/:id/approve`
+- POST `/api/ambulance-approvals/:id/reject` { reason? }
+
+### Paramedics
+- POST `/api/paramedics` { user_id, code?, qualifications?, profile? }
+- GET `/api/paramedics?hospital_id=&fleet_id=`
+- GET `/api/paramedics/:id`
+- PUT `/api/paramedics/:id`
+
+### Doctors
+- POST `/api/doctors` { user_id, license_no?, specialization?, profile? }
+- GET `/api/doctors?hospital_id=`
+- GET `/api/doctors/:id`
+- PUT `/api/doctors/:id`
+
+### Assignments
+- POST `/api/ambulances/:ambulanceId/assign` { assignee_type, assignee_id }
+- GET `/api/ambulances/:ambulanceId/assignments`
+- DELETE `/api/assignments/:id`
+
+### Connection Requests / Connections
+- POST `/api/connection-requests` { ambulance_code, from_hospital_id }
+- GET `/api/connection-requests?to_fleet_id=`
+- POST `/api/connection-requests/:id/approve`
+- POST `/api/connection-requests/:id/reject`
+- GET `/api/ambulance-connections?hospital_id=`
+
+### Patients
+- POST `/api/patients` { patient_code, name?, age?, gender?, contact?, medical_history? }
+- GET `/api/patients`
+- GET `/api/patients/:id`
+- GET `/api/patients/by-code/:patient_code`
+
+### Onboardings
+- POST `/api/onboardings` { ambulance_id, patient {..} OR patient_id, initiated_by?, selected_hospital_id?, initial_vitals?, notes? }
+- GET `/api/onboardings/:id`
+- POST `/api/onboardings/:id/approve`
+- POST `/api/onboardings/:id/reject`
+- POST `/api/onboardings/:id/start`
+- POST `/api/onboardings/:id/offboard`
+- PUT `/api/onboardings/:id/prescription` { prescriptions, updated_by }
+- GET `/api/onboardings/:id/prescription`
+
+### Device telemetry & Dashboard
+- POST `/api/device-data` { ambulance_id, device_id?, payload }
+- GET `/api/ambulances/:id/device-data`
+- GET `/api/ambulances/:id/dashboard`
+
+### Meetings
+- POST `/api/meetings/token` { onboarding_id, user_id, role }
+
+### Audit
+- GET `/api/audit-logs?resource_type=&resource_id=`
+- POST `/api/audit-logs` (internal)
+
+## Typical flows (condensed)
+
+### 1) Hospital adds ambulance, superadmin approves
+```sh
+# create hospital
+curl -X POST $BASE/api/hospitals -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' -d '{"name":"City Hospital"}'
+
+# add ambulance
+curl -X POST $BASE/api/ambulances -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' -d '{"code":"AMB-1001","owner_type":"hospital","owner_id":1}'
+
+# superadmin approves
+curl -X POST $BASE/api/ambulance-approvals/1/approve -H "Authorization: Bearer $TOKEN"
+```
+
+### 2) Hospital connects fleet ambulance
+```sh
+# hospital requests connect by ambulance code
+curl -X POST $BASE/api/connection-requests -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' -d '{"ambulance_code":"AMB-2001","from_hospital_id":1}'
+
+# fleet admin approves
+curl -X POST $BASE/api/connection-requests/1/approve -H "Authorization: Bearer $FLEET_TOKEN"
+```
+
+### 3) Onboarding lifecycle
+```sh
+# create onboarding (paramedic)
+curl -X POST $BASE/api/onboardings -H "Authorization: Bearer $P_TOKEN" -H 'Content-Type: application/json' -d '{"ambulance_id":1,"patient":{"name":"John"},"selected_hospital_id":1}'
+
+# approve if fleet-owned
+curl -X POST $BASE/api/onboardings/1/approve -H "Authorization: Bearer $FLEET_TOKEN"
+
+# start transport
+curl -X POST $BASE/api/onboardings/1/start -H "Authorization: Bearer $P_TOKEN"
+
+# offboard
+curl -X POST $BASE/api/onboardings/1/offboard -H "Authorization: Bearer $P_TOKEN"
+```
+
+### 4) Telemetry + dashboard
+```sh
+curl -X POST $BASE/api/device-data -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' -d '{"ambulance_id":1,"device_id":"HRM-33","payload":{"hr":90}}'
+
+curl -X GET $BASE/api/ambulances/1/dashboard -H "Authorization: Bearer $TOKEN"
+```
+
+## RBAC overview
+- superadmin: all access; approvals and audit
+- hospital_admin/user: within hospital ownership + connections
+- fleet_admin: fleet ownership + connection approvals
+- paramedic/doctor: assigned ambulance access; onboarding/prescriptions per rules
+
+## Error codes
+- 401 Missing/invalid token
+- 403 Forbidden (role or ownership)
+- 404 Not found or locked by other hospital
+- 409 Duplicate resource (e.g., ambulance code)
+- 422 Validation errors
+
+## Notes
+- Device credentials stored in ambulance JSON for now; consider encryption.
+- Meeting token is a placeholder; integrate a vendor later.

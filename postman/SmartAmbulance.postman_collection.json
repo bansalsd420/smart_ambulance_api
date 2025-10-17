@@ -1,0 +1,213 @@
+{
+  "info": {
+    "name": "SMART AMBULANCE API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Postman collection for SMART AMBULANCE REST API"
+  },
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "GET /api/health",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/health" }
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "POST /api/auth/login",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"superadmin@example.com\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/login"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const data = pm.response.json();",
+                  "pm.collectionVariables.set('token', data.token);"
+                ], "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Hospitals",
+      "item": [
+        {
+          "name": "POST /api/hospitals",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" } ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"City Hospital\",\n  \"address\": \"Downtown\",\n  \"contact_phone\": \"1234567890\"\n}" },
+            "url": "{{baseUrl}}/api/hospitals"
+          }
+        },
+        { "name": "GET /api/hospitals", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": "{{baseUrl}}/api/hospitals" } }
+      ]
+    },
+    {
+      "name": "Fleets",
+      "item": [
+        {
+          "name": "POST /api/fleets",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" } ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Fleet A\",\n  \"contact_phone\": \"9876543210\"\n}" },
+            "url": "{{baseUrl}}/api/fleets"
+          }
+        },
+        { "name": "GET /api/fleets", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": "{{baseUrl}}/api/fleets" } }
+      ]
+    },
+    {
+      "name": "Ambulances",
+      "item": [
+        {
+          "name": "POST /api/ambulances",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" } ],
+            "body": { "mode": "raw", "raw": "{\n  \"code\": \"AMB-1001\",\n  \"name\": \"ICU-A1\",\n  \"owner_type\": \"hospital\",\n  \"owner_id\": 1,\n  \"device_ids\": [{\"device_id\": \"DEV-001\"}],\n  \"metadata\": {\"make\": \"Mercedes\"}\n}" },
+            "url": "{{baseUrl}}/api/ambulances"
+          }
+        },
+        { "name": "GET /api/ambulances", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": "{{baseUrl}}/api/ambulances" } }
+      ]
+    },
+    {
+      "name": "Approvals",
+      "item": [
+        { "name": "GET /api/ambulance-approvals?status=pending", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": "{{baseUrl}}/api/ambulance-approvals?status=pending" } },
+        { "name": "POST /api/ambulance-approvals/:id/approve", "request": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": "{{baseUrl}}/api/ambulance-approvals/1/approve" } },
+        { "name": "POST /api/ambulance-approvals/:id/reject", "request": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" } ], "body": { "mode": "raw", "raw": "{\n  \"reason\": \"Incomplete docs\"\n}" }, "url": "{{baseUrl}}/api/ambulance-approvals/1/reject" } }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "POST /api/users",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" } ],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"paramedic1@example.com\",\n  \"password\": \"secret123\",\n  \"role\": \"paramedic\",\n  \"hospital_id\": 1\n}" },
+            "url": "{{baseUrl}}/api/users"
+          }
+        },
+        {
+          "name": "POST /api/users (fleet admin)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" } ],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"fleetadmin@example.com\",\n  \"password\": \"secret123\",\n  \"role\": \"fleet_admin\",\n  \"fleet_id\": 1\n}" },
+            "url": "{{baseUrl}}/api/users"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Paramedics & Doctors",
+      "item": [
+        {
+          "name": "POST /api/paramedics",
+          "request": {"method":"POST","header":[{"key":"Content-Type","value":"application/json"},{"key":"Authorization","value":"Bearer {{token}}"}],"body":{"mode":"raw","raw":"{\n  \"user_id\": 2,\n  \"code\": \"PM-001\"\n}"},"url":"{{baseUrl}}/api/paramedics"}
+        },
+        { "name": "GET /api/paramedics?hospital_id=1", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": "{{baseUrl}}/api/paramedics?hospital_id=1" } },
+        {
+          "name": "POST /api/doctors",
+          "request": {"method":"POST","header":[{"key":"Content-Type","value":"application/json"},{"key":"Authorization","value":"Bearer {{token}}"}],"body":{"mode":"raw","raw":"{\n  \"user_id\": 3,\n  \"license_no\": \"LIC-123\"\n}"},"url":"{{baseUrl}}/api/doctors"}
+        },
+        { "name": "GET /api/doctors?hospital_id=1", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": "{{baseUrl}}/api/doctors?hospital_id=1" } }
+      ]
+    },
+    {
+      "name": "Assignments",
+      "item": [
+        {
+          "name": "POST /api/ambulances/:ambulanceId/assign",
+          "request": {"method":"POST","header":[{"key":"Content-Type","value":"application/json"},{"key":"Authorization","value":"Bearer {{token}}"}],"body":{"mode":"raw","raw":"{\n  \"assignee_type\": \"paramedic\",\n  \"assignee_id\": 1\n}"},"url":"{{baseUrl}}/api/ambulances/1/assign"}
+        },
+        { "name": "GET /api/ambulances/:id/assignments", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": "{{baseUrl}}/api/ambulances/1/assignments" } }
+      ]
+    },
+    {
+      "name": "Connections",
+      "item": [
+        {
+          "name": "POST /api/connection-requests",
+          "request": {"method":"POST","header":[{"key":"Content-Type","value":"application/json"},{"key":"Authorization","value":"Bearer {{token}}"}],"body":{"mode":"raw","raw":"{\n  \"ambulance_code\": \"AMB-1002\",\n  \"from_hospital_id\": 1\n}"},"url":"{{baseUrl}}/api/connection-requests"}
+        },
+        { "name": "GET /api/connection-requests?to_fleet_id=1", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": "{{baseUrl}}/api/connection-requests?to_fleet_id=1" } },
+        { "name": "GET /api/ambulance-connections?hospital_id=1", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": "{{baseUrl}}/api/ambulance-connections?hospital_id=1" } }
+      ]
+    },
+    {
+      "name": "Patients",
+      "item": [
+        {
+          "name": "POST /api/patients",
+          "request": {"method":"POST","header":[{"key":"Content-Type","value":"application/json"},{"key":"Authorization","value":"Bearer {{token}}"}],"body":{"mode":"raw","raw":"{\n  \"patient_code\": \"P-0001\",\n  \"name\": \"John\"\n}"},"url":"{{baseUrl}}/api/patients"}
+        },
+        { "name": "GET /api/patients/by-code/:patient_code", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": "{{baseUrl}}/api/patients/by-code/P-0001" } }
+      ]
+    },
+    {
+      "name": "Onboardings",
+      "item": [
+        {
+          "name": "POST /api/onboardings",
+          "request": {"method":"POST","header":[{"key":"Content-Type","value":"application/json"},{"key":"Authorization","value":"Bearer {{token}}"}],"body":{"mode":"raw","raw":"{\n  \"ambulance_id\": 1,\n  \"patient\": {\n    \"name\": \"John Doe\", \n    \"age\": 45, \n    \"gender\": \"male\"\n  },\n  \"initiated_by\": 1,\n  \"selected_hospital_id\": 1,\n  \"initial_vitals\": {\n    \"spo2\": 95\n  }\n}"},"url":"{{baseUrl}}/api/onboardings"}
+        },
+        { "name": "POST /api/onboardings/:id/approve", "request": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": "{{baseUrl}}/api/onboardings/1/approve" } },
+        { "name": "POST /api/onboardings/:id/start", "request": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": "{{baseUrl}}/api/onboardings/1/start" } },
+        { "name": "POST /api/onboardings/:id/offboard", "request": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": "{{baseUrl}}/api/onboardings/1/offboard" } }
+      ]
+    },
+    {
+      "name": "Devices & Dashboard",
+      "item": [
+        {
+          "name": "POST /api/device-data",
+          "request": {"method":"POST","header":[{"key":"Content-Type","value":"application/json"},{"key":"Authorization","value":"Bearer {{token}}"}],"body":{"mode":"raw","raw":"{\n  \"ambulance_id\": 1,\n  \"device_id\": \"HRM-33\",\n  \"payload\": {\n    \"hr\": 92, \n    \"spo2\": 91\n  }\n}"},"url":"{{baseUrl}}/api/device-data"}
+        },
+        { "name": "GET /api/ambulances/:id/device-data", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": "{{baseUrl}}/api/ambulances/1/device-data" } },
+        { "name": "GET /api/ambulances/:id/dashboard", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": "{{baseUrl}}/api/ambulances/1/dashboard" } }
+      ]
+    },
+    {
+      "name": "Meetings",
+      "item": [
+        {
+          "name": "POST /api/meetings/token",
+          "request": {"method":"POST","header":[{"key":"Content-Type","value":"application/json"},{"key":"Authorization","value":"Bearer {{token}}"}],"body":{"mode":"raw","raw":"{\n  \"onboarding_id\": 1,\n  \"user_id\": 1,\n  \"role\": \"doctor\"\n}"},"url":"{{baseUrl}}/api/meetings/token"}
+        }
+      ]
+    },
+    {
+      "name": "Audit",
+      "item": [
+        {
+          "name": "GET /api/audit-logs",
+          "request": {"method":"GET","header":[{"key":"Authorization","value":"Bearer {{token}}"}],"url":"{{baseUrl}}/api/audit-logs"}
+        }
+      ]
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "token", "value": "" }
+  ]
+}
