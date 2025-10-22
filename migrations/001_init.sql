@@ -39,6 +39,7 @@ CREATE TABLE IF NOT EXISTS ambulances (
   status ENUM('pending_approval','active','suspended','disabled') DEFAULT 'pending_approval',
   device_ids JSON NULL,
   metadata JSON NULL,
+  amb_data JSON NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );

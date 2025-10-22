@@ -26,6 +26,17 @@ exports.get = async (req, res, next) => {
 exports.create = async (req, res, next) => {
   try {
     const { email, password, full_name, phone, role, hospital_id = null, fleet_id = null } = req.body;
+    // server-side either-or validation for paramedic/doctor
+    if (role === 'paramedic' || role === 'doctor') {
+      const hasHospital = hospital_id !== null && hospital_id !== '' && !Number.isNaN(Number(hospital_id))
+      const hasFleet = fleet_id !== null && fleet_id !== '' && !Number.isNaN(Number(fleet_id))
+      if (!hasHospital && !hasFleet) {
+        return res.status(422).json({ errors: { hospital_id: 'Provide hospital or fleet', fleet_id: 'Provide hospital or fleet' }, message: 'Paramedic/Doctor must belong to a hospital or a fleet' })
+      }
+      if (hasHospital && hasFleet) {
+        return res.status(422).json({ errors: { hospital_id: 'Provide either hospital or fleet, not both', fleet_id: 'Provide either hospital or fleet, not both' }, message: 'Paramedic/Doctor cannot belong to both a hospital and a fleet' })
+      }
+    }
     const hash = await bcrypt.hash(password, 10);
     const [r] = await db.execute(
       'INSERT INTO users (email, password_hash, full_name, phone, role, hospital_id, fleet_id) VALUES (?,?,?,?,?,?,?)',
@@ -43,6 +54,17 @@ exports.update = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { full_name, phone, role, hospital_id = null, fleet_id = null, is_active } = req.body;
+    // server-side either-or validation for paramedic/doctor
+    if (role === 'paramedic' || role === 'doctor') {
+      const hasHospital = hospital_id !== null && hospital_id !== '' && !Number.isNaN(Number(hospital_id))
+      const hasFleet = fleet_id !== null && fleet_id !== '' && !Number.isNaN(Number(fleet_id))
+      if (!hasHospital && !hasFleet) {
+        return res.status(422).json({ errors: { hospital_id: 'Provide hospital or fleet', fleet_id: 'Provide hospital or fleet' }, message: 'Paramedic/Doctor must belong to a hospital or a fleet' })
+      }
+      if (hasHospital && hasFleet) {
+        return res.status(422).json({ errors: { hospital_id: 'Provide either hospital or fleet, not both', fleet_id: 'Provide either hospital or fleet, not both' }, message: 'Paramedic/Doctor cannot belong to both a hospital and a fleet' })
+      }
+    }
     await db.execute('UPDATE users SET full_name=?, phone=?, role=?, hospital_id=?, fleet_id=?, is_active=? WHERE id=?', [
       full_name || null,
       phone || null,

@@ -10,6 +10,7 @@ const fleetsRouter = require('./routes/fleets');
 const ambulancesRouter = require('./routes/ambulances');
 const approvalsRouter = require('./routes/approvals');
 const usersRouter = require('./routes/users');
+const patientsRouter = require('./routes/patients');
 const paramedicsRouter = require('./routes/paramedics');
 const doctorsRouter = require('./routes/doctors');
 const assignmentsRouter = require('./routes/assignments');
@@ -33,6 +34,7 @@ app.use('/api/fleets', fleetsRouter);
 app.use('/api/ambulances', ambulancesRouter);
 app.use('/api/ambulance-approvals', approvalsRouter);
 app.use('/api/users', usersRouter);
+app.use('/api/patients', patientsRouter);
 app.use('/api/paramedics', paramedicsRouter);
 app.use('/api/doctors', doctorsRouter);
 app.use('/api', assignmentsRouter); // nested routes use /:ambulanceId paths

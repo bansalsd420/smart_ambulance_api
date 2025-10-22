@@ -9,7 +9,6 @@ router.post(
   authenticate,
   requireRole(['superadmin','hospital_admin','fleet_admin']),
   [
-    body('code').isString().notEmpty(),
     body('owner_type').isIn(['hospital','fleet']),
     body('owner_id').isInt(),
     body('status').optional().isIn(['pending_approval','active','suspended','disabled']),
@@ -27,6 +26,13 @@ router.put('/:id', authenticate, requireRole(['superadmin','hospital_admin','fle
   body('device_ids').optional().isArray(),
   body('metadata').optional().isObject(),
 ], validate, ctrl.update);
+router.post('/:id/change-owner', authenticate, requireRole(['superadmin','hospital_admin','fleet_admin']), [
+  param('id').isInt(),
+  body('owner_type').isIn(['hospital','fleet']),
+  body('owner_id').isInt(),
+], validate, ctrl.changeOwner);
+// clear all active assignments for an ambulance
+router.delete('/:id/assignments', authenticate, requireRole(['superadmin','hospital_admin','fleet_admin']), [param('id').isInt()], validate, ctrl.clearAssignments);
 router.delete('/:id', authenticate, requireRole(['superadmin']), [param('id').isInt()], validate, ctrl.remove);
 
 module.exports = router;

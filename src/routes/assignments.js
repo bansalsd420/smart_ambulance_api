@@ -10,7 +10,12 @@ router.post(
   authenticate,
   requireRole(['superadmin','hospital_admin','fleet_admin']),
   ensureAmbulanceAccess(),
-  [body('assignee_type').isIn(['doctor','paramedic']), body('assignee_id').isInt()],
+  [
+    body('assignee_type').isIn(['doctor','paramedic']),
+    body('assignee_id').optional().isInt(),
+    body('assignee_ids').optional().isArray(),
+    body('assignee_ids.*').optional().isInt(),
+  ],
   validate,
   ctrl.assign
 );

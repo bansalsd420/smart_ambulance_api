@@ -10,16 +10,8 @@ router.post('/', authenticate, requireRole(['superadmin','hospital_admin','fleet
   body('email').isEmail(),
   body('password').isString().isLength({ min: 6 }),
   body('role').isIn(['superadmin','hospital_admin','hospital_user','fleet_admin','paramedic','doctor']),
-  body().custom((value) => {
-    const role = value.role;
-    if (role === 'hospital_admin' || role === 'hospital_user' || role === 'paramedic' || role === 'doctor') {
-      if (!Number.isInteger(value.hospital_id)) throw new Error('hospital_id is required for hospital roles');
-    }
-    if (role === 'fleet_admin') {
-      if (!Number.isInteger(value.fleet_id)) throw new Error('fleet_id is required for fleet_admin');
-    }
-    return true;
-  }),
+  body('hospital_id').optional().isInt(),
+  body('fleet_id').optional().isInt(),
 ], validate, ctrl.create);
 router.put('/:id', authenticate, requireRole(['superadmin','hospital_admin','fleet_admin']), [
   param('id').isInt(),
